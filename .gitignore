@@ -1,0 +1,16 @@
+.env
+venv/
+__pycache__/
+*.pyc
+.env.*.local
+*.sqlite
+*.sqlite-shm
+*.sqlite-wal
+*.duckdb
+*.duckdb.wal
+*.log
+
+.venv/
+.env.*
+!.env.example
+.pytest_cache/

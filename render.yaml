@@ -1,0 +1,47 @@
+services:
+  - type: web
+    name: procurement-api
+    runtime: python
+    plan: starter
+    buildCommand: pip install -r requirements.txt
+    startCommand: uvicorn main:app --host 0.0.0.0 --port $PORT
+    disk:
+      name: procurement-state
+      mountPath: /var/data
+      sizeGB: 1
+    envVars:
+      - key: DATABASE_PATH
+        value: /var/data/procurement.duckdb
+      - key: LANGGRAPH_CHECKPOINT_PATH
+        value: /var/data/workflow-checkpoints.sqlite
+      - key: PAYPAL_BASE_URL
+        value: https://api-m.sandbox.paypal.com
+      - key: PAYPAL_RETURN_URL
+        value: https://procurement-dashboard.onrender.com/
+      - key: PAYPAL_CANCEL_URL
+        value: https://procurement-dashboard.onrender.com/
+      - key: PAYPAL_CLIENT_ID
+        sync: false
+      - key: PAYPAL_CLIENT_SECRET
+        sync: false
+      - key: GEMINI_API_KEY
+        sync: false
+      - key: APPROVAL_API_TOKEN
+        sync: false
+      - key: CORS_ALLOWED_ORIGINS
+        value: https://procurement-dashboard.onrender.com
+
+  - type: web
+    name: procurement-dashboard
+    runtime: python
+    plan: starter
+    buildCommand: pip install -r requirements.txt
+    startCommand: streamlit run dashboard.py --server.address 0.0.0.0 --server.port $PORT --server.headless true
+    envVars:
+      - key: API_BASE_URL
+        fromService:
+          type: web
+          name: procurement-api
+          property: host
+      - key: APPROVAL_API_TOKEN
+        sync: false
